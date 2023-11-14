@@ -326,15 +326,10 @@ int main(int argc, char* argv[]){
             op_code operacion = INTERRUPT;
             send(conexion_cpu_interrupt, &operacion, sizeof(op_code), 0);
         }
-        /*---------------------------------------------------*/
-        //Código temporal para probar interaccion con filesystem
-        else if(!strcmp(c_argv[0], "OPERAR_FILESYSTEM")) {
-            operacionesFilesSystem(conexion_filesystem);
-        }
         /*----------------------------------------------------*/
         //Código temporal para probar interaccion instrucciones
-        else if(!strcmp(c_argv[0], "INSTR_FILE")) {
-            operacionesInstrucciones(conexion_filesystem);
+        else if(!strcmp(c_argv[0], "FS")) {
+            ejecutarSecuencia(conexion_filesystem);
         }
         /*----------------------------------------------------*/
         else

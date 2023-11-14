@@ -1,16 +1,5 @@
 #include "temp.h"
 
-// - Directivas para el Filesystem ------
-#define RESET_FILE_SYSTEM 5000
-#define RESET_FAT 5001
-#define ABRIR_ARCHIVO 5002
-#define CREAR_ARCHIVO 5003
-#define TRUNCAR_ARCHIVO 5004
-#define LEER_ARCHIVO 5005
-#define ESCRIBIR_ARCHIVO 5006
-#define MOSTRAR_TABLA_FAT 5007
-#define FIN_DEL_PROGRAMA 5008
-//--------------------------------------
 // - Directivas de instrucciones ------
 #define F_OPEN 6000
 #define F_CLOSE 6001
@@ -19,171 +8,171 @@
 #define F_WRITE 6004
 #define F_TRUNCATE 6005
 
+#define RESET_FILE_SYSTEM 6008
+#define RESET_FAT 6009
+#define MOSTRAR_TABLA_FAT 6010
+#define FIN_DE_PROGRAMA 6011
 
-/*----------- Añadido temporal para controlat el FILESYSTEM -----------*/
-void operacionesFilesSystem(int conexion) {
-    op_code operacion;
+char secuencia[50][100]={
+	"RESET_FILE_SYSTEM",
+	"RESET_FAT",
+	"F_OPEN documento1 W",
+	"F_TRUNCATE documento1 100",
+	"F_SEEK documento1 20",
+	"F_WRITE documento1 14",
+	"F_CLOSE documento1",
+	"MOSTRAR_TABLA_FAT",
+	"F_OPEN documento1 R",
+	"F_SEEK documento1 20",
+	"F_READ documento1 14",
+	"F_CLOSE documento1",
+	"F_OPEN documento2 W",
+	"F_TRUNCATE documento2 3000",
+	"F_SEEK documento2 100",
+	"F_WRITE documento2 14",
+	"F_CLOSE documento2",
+	"MOSTRAR_TABLA_FAT",
+	"F_OPEN documento2 R",
+	"F_SEEK documento2 100",
+	"F_READ documento2 14",
+	"F_CLOSE documento2",
+	"F_OPEN documento3 W",
+	"F_TRUNCATE documento3 5000",
+	"F_SEEK documento3 2100",
+	"F_WRITE documento3 14",
+	"F_CLOSE documento3",
+	"MOSTRAR_TABLA_FAT",
+	"F_OPEN documento3 R",
+	"F_SEEK documento3 2100",
+	"F_READ documento3 14",
+	"F_CLOSE documento3",
+	"FIN_DE_PROGRAMA",
+};
+
+void ejecutarSecuencia(int conexion) {
+	op_code operacion;
     int opc=0;
-	while (opc!=9) {
-		printf("\n--------------------------------------------------------------\n");
-		printf ("--- Operaciones con filesyste v.Kernel---\n");
-		printf ("1) Resetear Filesystem - setea todos los bloques de datos a 0\n");
-		printf ("2) Resetear FAT - setea todas las entradas a 0\n");
-		printf ("3) Abrir archivo\n");
-		printf ("4) Crear archivo\n");
-		printf ("5) Truncar archivo\n");
-		printf ("6) Leer archivo\n");
-		printf ("7) Escribir archivo\n");
-		printf ("8) Mostrar tabla FAT\n");
-		printf ("9) Salir - Terminar\n");
-		printf ("** (Recordatorio):Secuencia normal:4 - 5 - 7 - 6 - Para crear/escribir/leer un archivo **\n");
-		printf ("Ingrese la opcion-> \n");
-		scanf("%d",&opc);
-		switch (opc) {
-			case 1:
-				printf ("Opcion elegida - 1) RESET_FILESYSTEM\n");
-                operacion = RESET_FILE_SYSTEM;
-				enviar_operacion(conexion,operacion);
-				break;
-			case 2:
-				printf ("Opcion elegida - 2) RESET_FAT\n");
-                operacion = RESET_FAT;
-				enviar_operacion(conexion,operacion);
-				break;
-			case 3:
-				printf ("Opcion elegida - 3) ABRIR_ARCHIVO\n");
-                operacion = ABRIR_ARCHIVO;
-				enviar_operacion(conexion,operacion);
-				break;
-			case 4:
-				printf ("Opcion elegida - 4) CREAR_ARCHIVO\n");
-                op_code operacion = CREAR_ARCHIVO;
-				enviar_operacion(conexion,operacion);
-				break;
-			case 5:
-				printf ("Opcion elegida - 5) TRUNCAR_ARCHIVO\n");
-                operacion = TRUNCAR_ARCHIVO;
-				enviar_operacion(conexion,operacion);
-				break;
-			case 6:
-				printf ("Opcion elegida - 6) LEER_ARCHIVO\n");
-                operacion = LEER_ARCHIVO;
-				enviar_operacion(conexion,operacion);
-				break;
-			case 7:
-				printf ("Opcion elegida - 7) ESCRIBIR ARCHIVO\n");
-                operacion = ESCRIBIR_ARCHIVO;
-				enviar_operacion(conexion,operacion);
-				break;
-			case 8:
-				printf ("Opcion elegida - 8) MOSTRAR_TABLA_FAT\n");
-                operacion = MOSTRAR_TABLA_FAT;
-				enviar_operacion(conexion,operacion);
-				break;
-			case 9:
-				printf ("\nSALE DEL MENU FILESYSTEM\n\n");
-                operacion = FIN_DEL_PROGRAMA;
-				enviar_operacion(conexion,operacion);
-				break;
-			default:
-				printf ("\n¡La opción ingresada no existe!\n\n");
-		}
-		printf("\n--------------------------------------------------------------\n");
-	}
-}
-/*-------------------------------------------------------------------*/
-/*----------- Añadido temporal para controlat el FILESYSTEM -----------*/
-void operacionesInstrucciones(int conexion) {
-    op_code operacion;
-    int opc=0;
-	char datosInstruccion[128]="";
+	char instruccion[128]="";
+	char puntero[128]="";
+	char parametro[128]="";
+	char parametro_a_enviar[128]="";
 	char *valor;
-	while (opc!=8) {
-		printf("\n--------------------------------------------------------------\n");
-		printf ("--- Emulador de instrucciones de archivos ---\n");
-		printf ("1) F_OPEN\n");
-		printf ("2) F_CLOSE\n");
-		printf ("3) F_SEEK\n");
-		printf ("4) F_READ\n");
-		printf ("5) F_WRITE\n");
-		printf ("6) F_TRUNCATE\n");
-		printf ("7) EMULAR_crear/truncar/escribir/leer/ver FAT un archivo\n");
-		printf ("8) Salir - Terminar\n");
-		printf ("Ingrese la opcion-> \n");
-		scanf("%d",&opc);
-		switch (opc) {
-			case 1:
-				printf ("Opcion elegida - 1) F_OPEN\n");
-                operacion = F_OPEN;
-				enviar_operacion(conexion,operacion);
-				break;
-			case 2:
-				printf ("Opcion elegida - 2) F_CLOSE\n");
-                operacion = F_CLOSE;
-				enviar_operacion(conexion,operacion);
-				break;
-			case 3:
-				printf ("Opcion elegida - 3) F_SEEK\n");
-				printf("No tiene implemetacion para FILESYSTEM es una opercion de actualización del Kernel\n");
-				break;
-			case 4:
-				printf ("Opcion elegida - 4) F_READ\n");
-                operacion = F_READ;
-				enviar_operacion(conexion,operacion);
-				strcpy(datosInstruccion,"archivo:documento1-posicion:10-cantBytes:9-direccion:12324");
-				enviar_mensaje(datosInstruccion,conexion);
-				//--- Espera respuesta de operacion F_READ finalizada
-				valor=recibir_mensaje(conexion);
-				if (atoi(valor)==1) printf("F_READ: Verificador de op CORRECTO");
-				else printf("F_READ: Verificador de op INCORRECTO");
-				break;
-			case 5:
-				printf ("Opcion elegida - 5) F_WRITE\n");
-                operacion = F_WRITE;
-				enviar_operacion(conexion,operacion);
-				strcpy(datosInstruccion,"archivo:documento1-posicion:20-cantBytes:14-direccion:20");
-				enviar_mensaje(datosInstruccion,conexion);
-				//--- Espera respuesta de operacion F_WRITE finalizada
-				valor=recibir_mensaje(conexion);
-				if (atoi(valor)==1) printf("F_WRITE: Verificador de op CORRECTO");
-				else printf("F_WRITE: Verificador de op INCORRECTO");
-				break;
-			case 6:
-				printf ("Opcion elegida - 6) F_TRUNCATE\n");
-                operacion = F_TRUNCATE;
-				enviar_operacion(conexion,operacion);
-				break;
-			case 7:
-				//---------------------------------------------------
-				printf ("Opcion elegida - 4) CREAR_ARCHIVO\n");
-                op_code operacion = CREAR_ARCHIVO;
-				enviar_operacion(conexion,operacion);
-				//---------------------------------------------------
-				printf ("Opcion elegida - 5) TRUNCAR_ARCHIVO\n");
-                operacion = TRUNCAR_ARCHIVO;
-				enviar_operacion(conexion,operacion);
-				//---------------------------------------------------
-				printf ("Opcion elegida - 7) ESCRIBIR ARCHIVO\n");
-                operacion = ESCRIBIR_ARCHIVO;
-				enviar_operacion(conexion,operacion);
-				//---------------------------------------------------
-				printf ("Opcion elegida - 6) LEER_ARCHIVO\n");
-                operacion = LEER_ARCHIVO;
-				enviar_operacion(conexion,operacion);
-				//---------------------------------------------------
-				printf ("Opcion elegida - 8) MOSTRAR_TABLA_FAT\n");
-                operacion = MOSTRAR_TABLA_FAT;
-				enviar_operacion(conexion,operacion);
-				//---------------------------------------------------
-				break;
-			case 8:
-				printf ("\nSALE DEL MENU DE OPERACIONES CON ARCHIVOS\n\n");
-                operacion = FIN_DEL_PROGRAMA;
-				enviar_operacion(conexion,operacion);
-				break;
-			default:
-				printf ("\n¡La opción ingresada no existe!\n\n");
+	int i;
+	int index=0;
+	int contEspacios=0;
+	for (i=0;i<33;i++){
+		printf("\n-----------------------------------------\n");
+		printf(">>Ejecuta:%s\n",secuencia[i]);
+		strcpy(instruccion,secuencia[i]);
+
+		if (strncmp(instruccion,"F_OPEN",6)==0){
+			//-------------------------------------------------
+			//--Envía operacion
+			operacion = F_OPEN;
+			enviar_operacion(conexion,operacion);
+			//-------------------------------------------------
+			//--Prepara y envía parametros
+			strcpy(parametro_a_enviar,"");
+			strcpy(parametro_a_enviar,&instruccion[7]);
+			printf(">>Parametro a enviar:%s\n",parametro_a_enviar);
+			enviar_mensaje(parametro_a_enviar,conexion);
+			//-------------------------------------------------
+			//--Recibe verificación de operacion
+			valor=recibir_mensaje(conexion);
+			if (atoi(valor)==0) printf(">>Respuesta:El archivo no existe. Lo crea\n");
+			else printf(">>Respusta:El archivo existe y su tamaño es:%u Bytes\n",atoi(valor));
 		}
-		printf("\n--------------------------------------------------------------\n");
+		if (strncmp(instruccion,"F_SEEK",6)==0){
+			strcpy(puntero,"");
+			//-- Obtiene el puntero que ubica la posición requerida dentro del archivo
+			index=0;
+			contEspacios=0;
+			while (contEspacios<2) {
+				if (instruccion[index]==' ') contEspacios++;
+				index++;
+			}
+			strcpy(puntero,&instruccion[index]);
+			printf(">>Puntero identificado:%s\n",puntero);
+		}
+		else if (strncmp(instruccion,"F_READ",6)==0){
+			//-------------------------------------------------
+			//--Envía operacion
+			operacion = F_READ;
+			enviar_operacion(conexion,operacion);
+			//-------------------------------------------------
+			//--Prepara y envía parametros
+			strcpy(parametro_a_enviar,"");
+			strcpy(parametro_a_enviar,&instruccion[7]);
+			//-- Añade puntero de posicion requerida del archivo
+			strcat(parametro_a_enviar," ");
+			strcat(parametro_a_enviar,puntero);
+			//-- Añade direccion de memoria
+			strcat(parametro_a_enviar," 12345");	
+			printf(">>Parametro a enviar:%s\n",parametro_a_enviar);
+			enviar_mensaje(parametro_a_enviar,conexion);
+			//-------------------------------------------------
+			//--Recibe verificación de operacion
+			valor=recibir_mensaje(conexion);
+				if (atoi(valor)==1) printf("F_READ - Respuesta: Verificador de op CORRECTO\n");
+				else printf("F_READ - Respuesta: Verificador de op INCORRECTO\n");
+		}
+		else if (strncmp(instruccion,"F_WRITE",7)==0){
+			//-------------------------------------------------
+			//--Envía operacion
+			operacion = F_WRITE;
+			enviar_operacion(conexion,operacion);
+			//-------------------------------------------------
+			//--Prepara y envía parametros
+			strcpy(parametro_a_enviar,"");
+			strcpy(parametro_a_enviar,&instruccion[8]);
+			//-- Añade puntero de posicion requerida del archivo
+			strcat(parametro_a_enviar," ");
+			strcat(parametro_a_enviar,puntero);
+			//-- Añade direccion de memoria
+			strcat(parametro_a_enviar," 20");
+			printf(">>Parametro a enviar:%s\n",parametro_a_enviar);
+			enviar_mensaje(parametro_a_enviar,conexion);
+			//-------------------------------------------------
+			//--Recibe verificación de operacion
+			valor=recibir_mensaje(conexion);
+				if (atoi(valor)==1) printf("F_WRITE - Respuesta: Verificador de op CORRECTO\n");
+				else printf("F_WRITE - Respuesta: Verificador de op INCORRECTO\n");
+		}
+		else if (strncmp(instruccion,"F_TRUNCATE",10)==0){
+			//-------------------------------------------------
+			//--Envía operacion
+			operacion = F_TRUNCATE;
+			enviar_operacion(conexion,operacion);
+			//-------------------------------------------------
+			//--Prepara y envía parametros
+			strcpy(parametro_a_enviar,"");
+			strcpy(parametro_a_enviar,&instruccion[11]);
+			printf(">>Parametro a enviar:%s\n",parametro_a_enviar);
+			enviar_mensaje(parametro_a_enviar,conexion);
+			//-------------------------------------------------
+			//--Recibe verificación de operacion
+			valor=recibir_mensaje(conexion);
+			if (atoi(valor)==1) printf("F_TRUNCATE - Respuesta: Verificador de op CORRECTO\n");
+			else printf("F_TRUNCATE - Respuesta: Verificador de op INCORRECTO\n");
+		}
+		/*-----------------------------------------------------------------*/
+		/*------ INSTRUCCIONES PARA OPERAR FILESYSTEM (TEMPORALES)---------*/
+		else if (strncmp(instruccion,"RESET_FILE_SYSTEM",17)==0){				
+            operacion = RESET_FILE_SYSTEM;
+			enviar_operacion(conexion,operacion);
+		}
+		else if (strncmp(instruccion,"RESET_FAT",9)==0){				
+            operacion = RESET_FAT;
+			enviar_operacion(conexion,operacion);
+		}
+		else if (strncmp(instruccion,"MOSTRAR_TABLA_FAT",17)==0){				
+            operacion = MOSTRAR_TABLA_FAT;
+			enviar_operacion(conexion,operacion);
+		}
+		else if (strncmp(instruccion,"FIN_DE_PROGRAMA",17)==0){				
+            operacion = FIN_DE_PROGRAMA;
+			enviar_operacion(conexion,operacion);
+		}
 	}
+	printf(">>> Fin ejecucion instrucciones FILESYSTEM\n\n");
 }

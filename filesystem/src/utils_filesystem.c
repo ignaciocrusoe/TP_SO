@@ -338,7 +338,7 @@ void mostrar_tabla_FAT(FILE *fat,uint32_t MAX_ENTRADAS_FAT) {
     printf ("---------------------------------------\n");
     printf ("---------Contenido de la FAT-----------\n");
     printf ("---------------------------------------\n");
-    for (ui32_indice=0;ui32_indice<35;ui32_indice++) {
+    for (ui32_indice=0;ui32_indice<10;ui32_indice++) {
         fread (&ui32_bloqueFAT,sizeof(ui32_bloqueFAT),1,fat);
         if (ui32_bloqueFAT!=9999) printf ("Entrada:(%u) se enlaza con:(%u)\n",ui32_indice,ui32_bloqueFAT/4);
         else printf ("Entrada:(%u) Fin de archivo con: (%u)\n",ui32_indice,ui32_bloqueFAT);

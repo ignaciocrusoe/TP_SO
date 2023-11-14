@@ -10,11 +10,11 @@ char *buscaDatoEnMensaje(char *mensaje,char *valor,int parametro) {
 
     for (w=0;w<parametro;w++) {
         //Busca los dos puntos luego de la palabra
-        while (mensaje[i]!=':') i++;
+        while (mensaje[i]!=' ') i++;
         i++;
     }
     //Busca los - luego del nombre del archivo
-    while ((mensaje[i]!='-') && (mensaje[i]!='\0')) {
+    while ((mensaje[i]!=' ') && (mensaje[i]!='\0')) {
         valor[j]=mensaje[i];
         i++;
         j++;

@@ -51,16 +51,6 @@ char *tam_bloque;
 char *retardo_acceso_bloque;
 char *retardo_acceso_fat;
 
-#define RESET_FILE_SYSTEM 5000
-#define RESET_FAT 5001
-#define ABRIR_ARCHIVO_D 5002
-#define CREAR_ARCHIVO_D 5003
-#define TRUNCAR_ARCHIVO 5004
-#define LEER_ARCHIVO 5005
-#define ESCRIBIR_ARCHIVO 5006
-#define MOSTRAR_TABLA_FAT 5007
-#define FIN_DEL_PROGRAMA 5008
-//--------------------------------------
 // - Directivas de instrucciones ------
 #define F_OPEN 6000
 #define F_CLOSE 6001
@@ -68,6 +58,11 @@ char *retardo_acceso_fat;
 #define F_READ 6003
 #define F_WRITE 6004
 #define F_TRUNCATE 6005
+
+#define RESET_FILE_SYSTEM 6008
+#define RESET_FAT 6009
+#define MOSTRAR_TABLA_FAT 6010
+#define FIN_DE_PROGRAMA 6011
 
 
 
@@ -79,6 +74,10 @@ FILE *fat;
 
 char documentoArchivo[30000]="";
 
-int32_t abrir_archivo(char* path_fcb, char* nombre);
+
+void iterator(char* value) {
+	//log_info(logger,"%s", value);
+	puts(value);
+}
 
 #endif

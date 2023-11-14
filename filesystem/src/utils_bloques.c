@@ -21,7 +21,6 @@ int escribir_en_archivo_bloques(FILE *filesystem,uint32_t ui32_entrada_FAT,char 
 
 int escribir_en_archivo_fisico(FILE *filesystem,uint32_t ui32_entrada_FAT,uint32_t ui32_tamBloque,char *buffer_data,uint32_t posicionPunteroRelativa,uint32_t cantBytes) {
     uint32_t ui32_bloque_escritura=0;
-    printf("\nEstoy dentro de escribir_en_archivo_fisico\n");
     printf("Numero de entrada FAT:%u\n",ui32_entrada_FAT);
     printf("Los datos a almacenar son:%s\n",buffer_data);
     printf("La posicion relativa es:%u - y la cantByte:%u\n",posicionPunteroRelativa,cantBytes);

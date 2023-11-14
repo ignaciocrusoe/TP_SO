@@ -3,25 +3,24 @@
 /*-----------------------------------------------------------------------------------*/
 /* Emulacion de peticiones del modulo Kernel*/
 /*-----------------------------------------------------------------------------------*/
-/* 1) ABRIR_ARCHIVO-----------------------------*/
-uint32_t d_abrir_archivo(char *nombreArchivo,char *c_directorio_fcb) {
+/* 1.1) CREAR O ABRE UN ARCHIVO ----------------------*/
+uint32_t crear_abrir_archivo(char *nombreArchivo,char *c_directorio_fcb,t_log *logger) {
     FILE *f_arch_fcb;
     char direccionArchivo[100]="";
-
     strcpy(direccionArchivo,c_directorio_fcb);
-
+    strcat(direccionArchivo,"/");
     strcat(direccionArchivo,nombreArchivo);
     strcat(direccionArchivo,".fcb");
     f_arch_fcb=fopen(direccionArchivo,"r");
     if (f_arch_fcb==NULL) {
-        printf("Nombre de archivo incorrecto o no existe");
-        exit(1);
+        crear_archivo(nombreArchivo,c_directorio_fcb,logger);
+        return(0);
     }
     return(tamanio_Archivo_fcb(nombreArchivo,c_directorio_fcb));
 }
 
-/* 2) CREAR_ARCHIVO-----------------------------*/
-int crear_archivo_d(char *nombreArchivo,t_log *logger,char *c_directorio_fcb) {
+/* 1.2) CREAR_ARCHIVO-----------------------------*/
+int crear_archivo(char *nombreArchivo,char *c_directorio_fcb,t_log *logger) {
     actualizar_Archivo_fcb(nombreArchivo,0,9999,c_directorio_fcb);
     committed_logger_CREAR_ARCHIVO(nombreArchivo,logger);
     return(1);
@@ -43,6 +42,7 @@ int truncar_archivo(char *nombreArchivo,uint32_t ui32_longMen_datos,t_log *logge
     ui32_entrada_inicial=bloqueInicial_Archivo_fcb(nombreArchivo,c_directorio_fcb);
 
     if (ui32_entrada_inicial==9999) {
+        printf("El archivo aún no tiene datos almacenados\n");
         /* Caso (1): Asignacion de entradas a la tabla FAT a un archivo recientemente creado*/
         /*El archivo fcb NO tiene una entrada inicial asignada en la tabla FAT*/
         ui32_cant_bloques_necesitados=cantBloques_FAT_necesitados(ui32_longMen_datos,ui32_tamBloque);

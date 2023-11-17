@@ -6,6 +6,7 @@ extern sem_t mutex_flag_interrupciones;
 
 extern int flag_interrupciones;
 extern int execute;
+t_motivo_desalojo motivo;
 
 void recibir_interrupciones(void* arg)
 {
@@ -15,13 +16,24 @@ void recibir_interrupciones(void* arg)
     while (1)
     {
         operacion = recibir_operacion(arg_h->socket_interrupt);
-        if(operacion == INTERRUPT) //Acá podemos diferenciar el tipo de interrupción.
+
+        switch(operacion)
         {
-            sem_wait(&mutex_flag_interrupciones);
-            flag_interrupciones = 1; 
-            sem_post(&mutex_flag_interrupciones);
+            case INTERRUPT:
+                motivo = CLOCK_INTERRUPT;
+                break;
+            
+            case FINALIZAR_PROCESO:
+                motivo = KILL;
+                break;
+            default:
+                break;
         }
+        sem_wait(&mutex_flag_interrupciones);
+        flag_interrupciones = 1; 
+        sem_post(&mutex_flag_interrupciones);
     }
+
 }
 
 void atender_interrupciones(int socket_kernel_dispatch)
@@ -32,7 +44,7 @@ void atender_interrupciones(int socket_kernel_dispatch)
         flag_interrupciones = 0; 
         sem_post(&mutex_flag_interrupciones);
         enviar_contexto_de_ejecucion(registros, socket_kernel_dispatch);
-        enviar_motivo_desalojo(socket_kernel_dispatch, CLOCK_INTERRUPT);
+        enviar_motivo_desalojo(socket_kernel_dispatch, motivo);
         execute = 0;
     }
     else

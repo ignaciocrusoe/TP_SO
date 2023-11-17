@@ -34,5 +34,6 @@ typedef struct
 
 t_archivo* crear_archivo(char* nombre_archivo, uint32_t tam_archivo, t_lock lock);
 t_lock de_string_a_t_lock(char* str);
+t_archivo* buscar_archivo_segun_nombre(char* nombre, t_list* lista);
 
 #endif

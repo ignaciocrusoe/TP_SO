@@ -74,6 +74,10 @@ void conexion_cpu(void* arg)
             send(conexion_cpu, &tam_pagina, sizeof(int), NULL);
             break;
 
+        case FINALIZAR_PROCESO:
+        
+            break;
+
         default:
             liberar_conexion(arg_h->socket_cpu);
             return;

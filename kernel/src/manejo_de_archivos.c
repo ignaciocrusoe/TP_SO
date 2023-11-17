@@ -23,3 +23,17 @@ t_lock de_string_a_t_lock(char* str)
         lock = WRITE;
     }
 }
+
+t_archivo* buscar_archivo_segun_nombre(char* nombre, t_list* lista)
+{
+
+
+    bool tiene_mismo_nombre(void* nombre) {
+        return (((t_archivo*)archivo)->nombre == nombre);
+    }
+
+    t_archivo* archivo = NULL;
+    archivo = list_find(lista, tiene_mismo_nombre);
+    return archivo;
+
+}

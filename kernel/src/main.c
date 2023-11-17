@@ -207,17 +207,23 @@ int main(int argc, char* argv[]){
         {
             t_pcb* pcb;
             //buscar el proceso (primero fijarse si esta ejecutando, segundo en la lista de blocked y tercero ready...)
-            if(execute->pid == c_argv[1]){
-                enviar_operacion(conexion_cpu_interrupt, FINALIZAR_PROCESO);
-            }else
+            if(execute->pid == c_argv[1])
             {
-                /*
-                if(buscar_proceso_segun_pid(c_argv[1], cola_blocked) != NULL){
-                    pcb = buscar_proceso_segun_pid(c_argv[1], cola_blocked);
-                    list_remove_element(cola_blocked, pcb);
-                   
+                enviar_operacion(conexion_cpu_interrupt, FINALIZAR_PROCESO);
+            }
+            else
+            {
+
+                t_list_iterator* recursos = list_iterator_create(recursos_disponibles);
+                while(list_iterator_has_next(recursos))
+                {
+                    t_recurso* recurso = list_iterator_next(recursos);
+                    pcb = buscar_proceso_segun_pid(c_argv[1], recurso->cola_blocked);
+                    if(pcb != NULL)
+                    {
+                        break;
+                    }
                 }
-                */      //Vamos a tener que buscar en la cola de bloqueados de cada recurso
                 if(buscar_proceso_segun_pid(c_argv[1], cola_ready) != NULL)
                 {
                     pcb = buscar_proceso_segun_pid(c_argv[1], cola_ready);
@@ -237,7 +243,6 @@ int main(int argc, char* argv[]){
                 
             }
 
-            //send a memoria para liberar espacio
             enviar_operacion(conexion_memoria, FINALIZAR_PROCESO);
             //liberar_recursos(pcb);
             

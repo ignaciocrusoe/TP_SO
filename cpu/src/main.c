@@ -349,7 +349,13 @@ int main(int argc, char* argv[]){
             }
             else if(!strcmp(parametros[0], "F_WRITE"))
             {
-            
+                execute = 0;
+                registros->PC++;
+                t_direccion_fisica* direccion_fisica = traducir_direccion(parametros[2], tam_pagina, conexion_memoria, pid);
+                enviar_contexto_de_ejecucion(registros, socket_kernel_dispatch);
+                enviar_motivo_desalojo(socket_kernel_dispatch, F_WRITE);
+                enviar_mensaje(parametros[1],socket_kernel_dispatch);
+                enviar_direccion(conexion_memoria, direccion_fisica);
             }
             else if(!strcmp(parametros[0], "F_TRUNCATE"))
             {

@@ -33,6 +33,7 @@
         "planificador_mediano_plazo.h": "c",
         "utils_filesystem.h": "c",
         "fcb.h": "c",
-        "manejo_de_archivos.h": "c"
+        "manejo_de_archivos.h": "c",
+        "stdint.h": "c"
     }
 }

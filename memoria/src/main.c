@@ -13,6 +13,10 @@ t_bitarray* frame_bitarray;
 int tam_pagina; 
 int tam_memoria;
 
+/*ESTRUCTURAS PARA ALGORITMOS*/
+bool algoritmo_de_reemplazo = false; // Por default (false) FIFO, caso contrario LRU
+t_list* lista_de_frames;
+
 
 int main(int argc, char* argv[]){
     t_log* logger = iniciar_logger("log_memoria.log","CPU");
@@ -22,11 +26,13 @@ int main(int argc, char* argv[]){
     tam_memoria = config_get_int_value(config, "TAM_MEMORIA");
     tam_pagina = config_get_int_value(config, "TAM_PAGINA");
     int retardo_respuesta = config_get_int_value(config, "RETARDO_RESPUESTA");
+    algoritmo_de_reemplazo = (config_get_string_value(config, "ALGORITMO_REEMPLAZO") == "LRU");
 
     memoria_de_usuario = malloc(tam_memoria);
     char* c_bitarray = malloc(tam_memoria / 8);
     frame_bitarray = bitarray_create_with_mode(c_bitarray, sizeof(c_bitarray), LSB_FIRST);
-
+    lista_de_frames = list_create();
+    
     printf("PUERTO_ESCUCHA=%s\n",puerto_escucha);
     int socket_servidor = iniciar_servidor(logger,puerto_escucha);
     int socket_filesystem = esperar_cliente(logger, socket_servidor);

@@ -51,8 +51,28 @@ void conexion_cpu(void* arg)
             printf("Recibí pid\n");
             recv(arg_h->socket_cpu, &pagina_buscada, sizeof(uint32_t), MSG_WAITALL);
             printf("RECIBI PAGINA\n");
-            int32_t marco = obtener_numero_de_marco(pid, pagina_buscada);
-            enviar_frame(arg_h->socket_cpu, marco);
+            int32_t frame = obtener_frame(pagina_buscada, pid);
+            enviar_frame(arg_h->socket_cpu, frame);
+            if(frame == -3){
+                // Tengo que repetir lógica para hacer bien el log
+                t_frame_info* frame_victima_info = elegir_victima();
+                t_proceso* proceso_victima = buscar_proceso(frame_victima_info->pid);
+                t_pagina* pagina_victima = obtener_pagina_de_frame(proceso_victima->tabla_de_paginas, frame_victima_info->frame);
+                if(pagina_victima->modificado){
+                    escribir_en_swap(pagina_victima, arg);
+                    log_info(logger_hilo, "SWAP OUT - PID: %i - Marco: %i - Page OUT: %i-%i", proceso_victima->pid, frame_victima_info->frame, proceso_victima->pid, pagina_victima->pagina);
+                }
+                frame = frame_victima_info->frame;
+                eliminar_frame_info(frame_victima_info);
+
+                agregar_frame_info(frame, pid);
+                t_pagina* pagina = pagina_en_proceso(pagina_buscada, pid);
+                pagina->frame = frame;
+                leer_en_swap(pagina, arg);
+                log_info("REEMPLAZO - Marco: %i - Page Out: %i-%i - Page In: %i-%i", frame, proceso_victima->pid,pagina_victima->pagina,pid,pagina_buscada);
+            }
+            // Tengo tres tipos de PAGE_FAULT, uno es salvable
+            // Consultar     
             break;
 
         case PEDIDO_LECTURA:
@@ -66,8 +86,12 @@ void conexion_cpu(void* arg)
             direccion = recibir_direccion(arg_h->socket_cpu);
             recv(arg_h->socket_cpu, &a_escribir, sizeof(uint32_t), MSG_WAITALL);
             printf("Voy a escribir en memoria\n");
-            escribir_en_memoria(direccion, a_escribir);
-            //send(arg_h->socket_cpu, &direccion, sizeof(uint32_t), NULL);
+            void* st1 = escribir_en_memoria(direccion, a_escribir);
+            if(st1 == NULL)
+                enviar_respuesta(arg_h->socket_cpu, ERROR);
+            else
+                enviar_respuesta(arg_h->socket_cpu, OK);
+            
             break;
 
         case PEDIDO_SIZE_PAGINA:
@@ -189,18 +213,67 @@ void conexion_kernel(void* arg)
             log_info(logger_hilo, "SIGNAL cantidad_de_procesos");
 
             log_info(logger_hilo, "Se asignó %i bytes al proceso %i", size, pid);
-
-            uint32_t (*algoritmo)(void);
-            algoritmo = reemplazo_fifo;
-            asignar_memoria(pid, size, algoritmo);
+            
+            // Reservo el espacio en swap
+            uint32_t cantidad_de_bloques = ceil(size / tam_pagina);
+            t_list* bloques_reservados;
+            enviar_operacion(arg_h->socket_filesystem, RESERVAR_SWAP);
+            send(arg_h->socket_filesystem, &cantidad_de_bloques, sizeof(uint32_t), 0);
+            // No tengo mucha idea como funciona esto, consultar
+            recibir_buffer(&bloques_reservados, arg_h->socket_filesystem); 
+            log_info(logger_hilo, "Se reservaron los bloques de SWAP para el proceso %i", pid);
+            
+            int32_t frame;
+            t_frame_info* frame_info;
+            t_pagina* pagina;
+            uint32_t cantidad_de_paginas = ceil(size / tam_pagina);
+            // Asigno memoria página por página
+            for(int nro_pagina = 0; nro_pagina < cantidad_de_paginas; nro_pagina++)
+            {
+                // En caso que no haya frame, se busca reemplazo
+                if(frame = frame_disponible() == -1)
+                    frame = reemplazo_de_frame(logger_hilo, arg);
+                agregar_frame_info(frame, pid);
+                agregar_pagina(pid, nro_pagina, frame, list_get(bloques_reservados, nro_pagina)); // Al ser del mismo tamaño los bloques que los frames, asigno linealmente
+                printf("Se asigna el frame %i al proceso %i para la página %i\n", frame, pid, nro_pagina);
+            }
+            log_info(logger_hilo, "PID: %i - Tamaño: %i", pid, cantidad_de_paginas);
 
             break;
-        
+        case FINALIZAR_PROCESO:
+            u_int32_t pid;
+            recv(arg_h->socket_kernel, &pid, sizeof(uint32_t), MSG_WAITALL);
+            t_proceso* proceso = buscar_proceso(pid);
+
+            log_info(logger_hilo, "PID: %i - Tamaño: %i", proceso->pid, list_size(proceso->tabla_de_paginas));
+
+            for(int nro_pagina = 0; nro_pagina < list_size(proceso->tabla_de_paginas); nro_pagina++){
+                pagina = list_get(proceso->tabla_de_paginas, nro_pagina);
+                log_info(logger_hilo, "PID: %i - Pagina: %i - Marco: %i", pid, pagina->pagina, pagina->frame);
+                // Primero libero la posición de la página en SWAP
+                uint32_t posicion_en_swap = pagina->posicion_en_swap;
+                enviar_operacion(arg_h->socket_filesystem, ELIMINAR_EN_SWAP);
+                send(arg_h->socket_filesystem, &posicion_en_swap, sizeof(uint32_t),NULL); //Revisar
+                /*t_response respuesta = recibir_respuesta(arg_h->socket_filesystem);
+                if(respuesta == ERROR)
+                    perror("No se elimino el bloque de SWAP");
+                else
+                    printf("Bloque de SWAP %i eliminado.\n", posicion_en_swap);
+                */ // Esto solo para testing, en escenario real se demoraria mucho
+                   // ya que esperaría a que FS confirme cada liberación del SWAP
+
+                eliminar_frame_info(pagina->frame);
+            }
+            // Elimino la tabla de memoria
+            list_destroy_and_destroy_elements(proceso->tabla_de_paginas, free);
+            // Elimino el proceso de la lista de procesos en memoria
+            quitar_de_memoria(pid);
+
+
+            break;
         default:
             liberar_conexion(arg_h->socket_kernel);
             return;
         }
-
     }
-    
 }

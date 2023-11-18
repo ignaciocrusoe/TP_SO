@@ -51,10 +51,26 @@ t_direccion_fisica* recibir_direccion(int socket)
     return direccion;
 }
 
-t_pagina* crear_pagina(uint32_t nro_pagina, uint32_t frame)
+t_pagina* crear_pagina(uint32_t nro_pagina, uint32_t frame, uint32_t posicion_en_swap)
 {
     t_pagina* pagina = malloc(sizeof(t_pagina));
     pagina->pagina = nro_pagina;
     pagina->frame = frame;
+    pagina->posicion_en_swap = posicion_en_swap;
     return pagina;
+}
+
+t_frame_info* crear_frame_info(uint32_t frame, uint32_t pid, uint32_t orden){
+    t_frame_info* frame_info = malloc(sizeof(t_frame_info));
+    frame_info->frame = frame;
+    frame_info->pid = pid;
+    frame_info->orden = orden;
+    return frame_info;
+}
+
+void* menor_que(void* frame1, void* frame2){
+    if(((t_frame_info*)frame1)->orden <= ((t_frame_info*)frame2)->orden)
+        return frame1;
+    else
+        return frame2;
 }

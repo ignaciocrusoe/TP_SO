@@ -44,6 +44,7 @@
         "operaciones.h": "c",
         "bloques.h": "c",
         "cmath": "c",
-        "ctype.h": "c"
+        "ctype.h": "c",
+        "desalojo.h": "c"
     }
 }

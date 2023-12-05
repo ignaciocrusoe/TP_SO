@@ -174,10 +174,11 @@ int main(int argc, char* argv[]) {
 
 		default:
 			liberar_conexion(socket_kernel);
+			//munmap(fat->memory_map, fat->size);
+			fclose(path_bloques);
+			return 0;
 			return;
 			break;
 		}
 	}
-	fclose(path_bloques);
-	return 0;
 	}

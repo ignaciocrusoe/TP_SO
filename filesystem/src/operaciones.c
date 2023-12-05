@@ -105,7 +105,7 @@ int32_t agrandar_archivo(t_fcb* archivo, uint32_t size)
 
 		archivo->tam_archivo += MIN(tam_bloque, por_asignar);
 		config_set_value(archivo->config, "TAMANIO_ARCHIVO", int_to_string(archivo->tam_archivo));
-		bytes_libres = tam_bloque - MAX((int32_t)por_asignar - (int32_t)tam_bloque, 0);
+		bytes_libres = MAX((int32_t)tam_bloque - (int32_t)por_asignar, 0);
 		por_asignar = MAX((int32_t)por_asignar - (int32_t)tam_bloque, 0);
 
 		if(por_asignar > 0)

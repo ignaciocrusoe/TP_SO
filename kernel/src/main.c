@@ -275,7 +275,24 @@ int main(int argc, char* argv[])
         }
         else if(!strcmp(c_argv[0], "MULTIPROGRAMACION"))
         {
-            //solo seria cambiar el valor del semaforo?     
+            int valor_nueva_multiprogramacion = atoi(c_argv[1]);
+            int diferencia = valor_nueva_multiprogramacion - atoi(grado_max_de_multiprogramacion);
+
+            if(diferencia > 0)
+            {
+                for(int i = 0; i < diferencia; i++){
+                    sem_post(&grado_de_multiprogramacion);
+                }
+                
+            } 
+            else 
+            {
+                for(int i = 0; i < abs(diferencia) ; i++){
+                    sem_wait(&grado_de_multiprogramacion);
+                }
+            }
+            
+
         }
         else if(!strcmp(c_argv[0], "PROCESO_ESTADO"))
         {   

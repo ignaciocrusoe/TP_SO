@@ -158,19 +158,19 @@ uint32_t buscar_victima_lru(void)
     return victima;
 }
 
-// Función para encontrar la página con el menor timestamp
+//Función para encontrar la página con el menor timestamp
 uint32_t ultima_pagina_accedida()
 {
     bool es_menor_el_timestamp(void* e1, void* e2) //Entre páginas
     {
-        return difftime(((t_pagina*)e1)->timestamp, ((t_pagina*)e2)->timestamp) < 0;
+        return temporal_diff(((t_pagina*)e1)->timestamp, ((t_pagina*)e2)->timestamp) < 0;
     }
 
     bool el_menor_timestamp(void* e1, void* e2) //Entre procesos
     {
         t_pagina* p1 = list_get_minimum(((t_proceso*)e1)->tabla_de_paginas, es_menor_el_timestamp);
         t_pagina* p2 = list_get_minimum(((t_proceso*)e2)->tabla_de_paginas, es_menor_el_timestamp);
-        return difftime(p1->timestamp, p2->timestamp) < 0;
+        return temporal_diff(p1->timestamp, p2->timestamp); < 0;
     }
 
     t_proceso* proceso_con_menor_timestamp = list_get_minimum(procesos_en_memoria, el_menor_timestamp);

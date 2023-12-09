@@ -110,39 +110,72 @@ uint32_t buscar_victima_fifo(void)
     }
     return victima;
 }
-/*
-uint32_t buscar_victima_lru(void)
-{
+
+//uint32_t buscar_victima_lru(void)
+//{
+//    uint32_t victima = contador_frame;
+//
+//    contador_frame++;
+//    //Lógica de desalojo
+//
+//    if(contador_frame > tam_memoria / tam_pagina)
+//    {
+//        victima = ultima_pagina_accedida();
+//    }
+//    //for(uint32_t i; i < tam_memoria / tam_pagina)
+//
+//    //bitarray_set_bit(frame_bitarray, victima);
+//    return victima;
+//}
+//
+//uint32_t ultima_pagina_accedida()
+//{
+//    bool es_menor_el_timestamp(void* e1, void* e2)
+//    {
+//        return(((t_pagina*)e1)->timestamp > ((t_pagina*)e2)->timestamp);
+//    }
+//    bool el_menor_timestamp(void* e1, void* e2)
+//    {
+//        t_pagina* p1, p2;
+//        p1 = list_find(((t_proceso*)e1)->tabla_de_paginas, es_menor_el_timestamp);
+//    }
+//    t_proceso* respuesta = (t_proceso*)list_find(procesos_en_memoria, el_menor_timestamp);
+//    return list_find(respuesta->tabla_de_paginas, es_menor_el_timestamp);
+//}
+
+
+uint32_t buscar_victima_lru(void) {
     uint32_t victima = contador_frame;
 
     contador_frame++;
-    //Lógica de desalojo
+    // Lógica de desalojo
 
-    if(contador_frame > tam_memoria / tam_pagina)
-    {
+    if (contador_frame > tam_memoria / tam_pagina) {
         victima = ultima_pagina_accedida();
     }
-    //for(uint32_t i; i < tam_memoria / tam_pagina)
 
-    //bitarray_set_bit(frame_bitarray, victima);
     return victima;
 }
 
-uint32_t ultima_pagina_accedida()
-{
-    bool es_menor_el_timestamp(void* e1, void* e2)
-    {
-        return(((t_pagina*)e1)->timestamp > ((t_pagina*)e2)->timestamp);
+// Función para encontrar la página con el menor timestamp
+uint32_t ultima_pagina_accedida(void) {
+    bool es_menor_el_timestamp(void* e1, void* e2) {
+        return ((t_pagina*)e1)->timestamp < ((t_pagina*)e2)->timestamp;
     }
-    bool el_menor_timestamp(void* e1, void* e2)
-    {
-        t_pagina* p1, p2;
-        p1 = list_find(((t_proceso*)e1)->tabla_de_paginas, es_menor_el_timestamp);
+
+    bool el_menor_timestamp(void* e1, void* e2) {
+        t_pagina* p1 = list_get_minimum(((t_proceso*)e1)->tabla_de_paginas, es_menor_el_timestamp);
+        t_pagina* p2 = list_get_minimum(((t_proceso*)e2)->tabla_de_paginas, es_menor_el_timestamp);
+        return p1->timestamp < p2->timestamp;
     }
-    t_proceso* respuesta = (t_proceso*)list_find(procesos_en_memoria, el_menor_timestamp);
-    return list_find(respuesta->tabla_de_paginas, es_menor_el_timestamp);
+
+    t_proceso* proceso_con_menor_timestamp = list_get_minimum(procesos_en_memoria, el_menor_timestamp);
+    t_pagina* pagina_menor_timestamp = list_get_minimum(proceso_con_menor_timestamp->tabla_de_paginas, es_menor_el_timestamp);
+    
+    return pagina_menor_timestamp->numero_pagina; 
 }
-*/
+
+
 
 t_proceso* buscar_proceso(uint32_t pid)
 {

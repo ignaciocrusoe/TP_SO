@@ -170,7 +170,7 @@ uint32_t ultima_pagina_accedida()
     {
         t_pagina* p1 = list_get_minimum(((t_proceso*)e1)->tabla_de_paginas, es_menor_el_timestamp);
         t_pagina* p2 = list_get_minimum(((t_proceso*)e2)->tabla_de_paginas, es_menor_el_timestamp);
-        return temporal_diff(p1->timestamp, p2->timestamp); < 0;
+        return temporal_diff(p1->timestamp, p2->timestamp) < 0;
     }
 
     t_proceso* proceso_con_menor_timestamp = list_get_minimum(procesos_en_memoria, el_menor_timestamp);

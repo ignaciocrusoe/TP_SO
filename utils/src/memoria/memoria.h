@@ -15,7 +15,7 @@ typedef struct
     uint8_t presencia;
     uint8_t modificado;
     uint32_t posicion_en_swap;
-    //time_t timestamp;
+    time_t timestamp;
 }t_pagina;
 
 typedef struct

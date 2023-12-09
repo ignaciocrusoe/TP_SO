@@ -6,6 +6,7 @@ extern sem_t mutex_lista_procesos;
 extern sem_t cantidad_de_procesos;
 extern int tam_pagina;
 extern t_log* logger;
+extern char* algoritmo_reemplazo;
 
 void conexion_cpu(void* arg)
 {
@@ -191,7 +192,14 @@ void conexion_kernel(void* arg)
 
             log_info(logger, "PID: %i - Tamaño: %i", pid, size);
             uint32_t (*algoritmo)(void);
-            algoritmo = buscar_victima_fifo;
+            if(!strcmp(algoritmo_reemplazo, "LRU"))
+            {
+                algoritmo = buscar_victima_lru;
+            }
+            else
+            {
+                algoritmo = buscar_victima_fifo;
+            }
             asignar_memoria(pid, size, algoritmo);
 
             break;

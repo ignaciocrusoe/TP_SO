@@ -60,7 +60,7 @@ int32_t obtener_numero_de_marco(uint32_t pid, uint32_t pagina_buscada)
 void asignar_memoria(uint32_t pid, uint32_t size, uint32_t (*algoritmo)(void))
 {
     uint32_t frame;
-    for(int nro_pagina = 0; nro_pagina < ceil(size / tam_pagina); nro_pagina++)
+    for(int nro_pagina = 0; nro_pagina < (size / tam_pagina); nro_pagina++)
     {
         frame = algoritmo();
         printf("Se asigna el frame %i\n", frame);
@@ -104,7 +104,7 @@ uint32_t buscar_victima_fifo(void)
     contador_frame++;
     //Lógica de desalojo
 
-    if(contador_frame > tam_memoria / tam_pagina)
+    if(contador_frame >= tam_memoria / tam_pagina)
     {
         contador_frame = 0;
     }
@@ -144,13 +144,14 @@ uint32_t buscar_victima_fifo(void)
 //}
 
 
-uint32_t buscar_victima_lru(void) {
+uint32_t buscar_victima_lru(void)
+{
     uint32_t victima = contador_frame;
 
     contador_frame++;
     // Lógica de desalojo
 
-    if (contador_frame > tam_memoria / tam_pagina) {
+    if (contador_frame >= tam_memoria / tam_pagina) {
         victima = ultima_pagina_accedida();
     }
 
@@ -158,21 +159,24 @@ uint32_t buscar_victima_lru(void) {
 }
 
 // Función para encontrar la página con el menor timestamp
-uint32_t ultima_pagina_accedida(void) {
-    bool es_menor_el_timestamp(void* e1, void* e2) {
-        return ((t_pagina*)e1)->timestamp < ((t_pagina*)e2)->timestamp;
+uint32_t ultima_pagina_accedida()
+{
+    bool es_menor_el_timestamp(void* e1, void* e2) //Entre páginas
+    {
+        return difftime(((t_pagina*)e1)->timestamp, ((t_pagina*)e2)->timestamp) < 0;
     }
 
-    bool el_menor_timestamp(void* e1, void* e2) {
+    bool el_menor_timestamp(void* e1, void* e2) //Entre procesos
+    {
         t_pagina* p1 = list_get_minimum(((t_proceso*)e1)->tabla_de_paginas, es_menor_el_timestamp);
         t_pagina* p2 = list_get_minimum(((t_proceso*)e2)->tabla_de_paginas, es_menor_el_timestamp);
-        return p1->timestamp < p2->timestamp;
+        return difftime(p1->timestamp, p2->timestamp) < 0;
     }
 
     t_proceso* proceso_con_menor_timestamp = list_get_minimum(procesos_en_memoria, el_menor_timestamp);
     t_pagina* pagina_menor_timestamp = list_get_minimum(proceso_con_menor_timestamp->tabla_de_paginas, es_menor_el_timestamp);
     
-    return pagina_menor_timestamp->numero_pagina; 
+    return pagina_menor_timestamp->pagina; 
 }
 
 

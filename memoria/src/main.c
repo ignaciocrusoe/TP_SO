@@ -12,6 +12,7 @@ t_bitarray* frame_bitarray;
 
 int tam_pagina; 
 int tam_memoria;
+char* algoritmo_reemplazo;
 
 t_log* logger;
 
@@ -23,6 +24,7 @@ int main(int argc, char* argv[]){
     tam_memoria = config_get_int_value(config, "TAM_MEMORIA");
     tam_pagina = config_get_int_value(config, "TAM_PAGINA");
     int retardo_respuesta = config_get_int_value(config, "RETARDO_RESPUESTA");
+    algoritmo_reemplazo = config_get_string_value(config, "ALGORITMO_REEMPLAZO");
 
     memoria_de_usuario = malloc(tam_memoria);
     char* c_bitarray = malloc(tam_memoria / 8);

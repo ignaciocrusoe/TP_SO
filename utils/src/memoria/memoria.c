@@ -98,6 +98,6 @@ t_pagina* crear_pagina(uint32_t nro_pagina, uint32_t frame)
     t_pagina* pagina = malloc(sizeof(t_pagina));
     pagina->pagina = nro_pagina;
     pagina->frame = frame;
-    //time(pagina->timestamp);
+    pagina->timestamp = time(NULL);
     return pagina;
 }

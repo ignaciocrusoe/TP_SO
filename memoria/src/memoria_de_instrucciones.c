@@ -65,6 +65,7 @@ void conexion_cpu(void* arg)
             pagina = buscar_pagina_segun_frame(direccion->frame);
             pagina->timestamp_uso = time(NULL);
             send(arg_h->socket_cpu, &lectura, sizeof(uint32_t), NULL);
+            free(direccion);
             break;
 
         case PEDIDO_ESCRITURA:
@@ -80,6 +81,7 @@ void conexion_cpu(void* arg)
 
             //printf("Voy a escribir en memoria\n");
             escribir_en_memoria(direccion, a_escribir);
+            free(direccion);
             //send(arg_h->socket_cpu, &direccion, sizeof(uint32_t), NULL);
             break;
 
@@ -88,7 +90,9 @@ void conexion_cpu(void* arg)
             break;
 
         default:
+            
             liberar_conexion(arg_h->socket_cpu);
+            log_destroy(logger_hilo);
             return;
         }
 
@@ -103,15 +107,17 @@ void parsear_instrucciones(t_log* logger,t_proceso* proceso, char* str)
         return NULL;
     }
     //t_list* instrucciones = list_create();
-    char* str_cpy = strdup(str);
+    char* str_cpy = strdup(str); ///*
+    
     char* token = strtok(str_cpy, "\n");
+    
     //log_info(logger, "Instruccion: %s", token);
     while(token != NULL)
     {
         //log_info(logger, "Instruccion: %s", token);
         if (strlen(token) > 0)
         {
-            char* token_cpy = malloc(strlen(token) + 1);
+            char* token_cpy = malloc(strlen(token) + 1); ///*
             memcpy(token_cpy, token,strlen(token));
             token_cpy[strlen(token_cpy)] = '\0';
             list_add(proceso->instrucciones, token);
@@ -120,19 +126,23 @@ void parsear_instrucciones(t_log* logger,t_proceso* proceso, char* str)
         }
         token = strtok(NULL, "\n");
     }
+    //free(token);
+    //free(str);
+    //free(str_cpy);
     //log_info(logger,"TOKEN NULL");
 }
 
 char* leer_pseudocodigo(t_log* logger, char* nombre_archivo)
 {
     //log_info(logger, "leer_pseudocodigo.");
-    char* ruta = malloc(strlen(nombre_archivo) + 15 + 1);
+    char* ruta = malloc(strlen(nombre_archivo) + 15 + 1); ///*
     strcpy(ruta, "./pseudocodigo/");
     //log_info(logger, "char*.");
     strcat(ruta, nombre_archivo);
     //log_info(logger, "strcat.");
     //log_info(logger, "ruta: %s", ruta);    
     FILE* archivo = fopen(ruta, "r");
+    
     //log_info(logger, "Se abrió el archivo.");
     if(archivo == NULL)
     {
@@ -147,7 +157,7 @@ char* leer_pseudocodigo(t_log* logger, char* nombre_archivo)
     size = ftell(archivo);
     fseek(archivo, 0, SEEK_SET);
 
-    pseudocodigo = malloc(size + 1);
+    pseudocodigo = malloc(size + 1); ///*
 
     if(pseudocodigo == NULL)
     {
@@ -159,7 +169,7 @@ char* leer_pseudocodigo(t_log* logger, char* nombre_archivo)
     pseudocodigo[size] = '\0';
 
     fclose(archivo);
-
+    free(ruta);
     printf("%s", pseudocodigo);
     return pseudocodigo;
 
@@ -186,6 +196,7 @@ void conexion_kernel(void* arg)
     t_algoritmo_response* pagina_a_sacar;
     t_proceso* proceso_a_agregar;
     uint32_t pid, size;
+    char* ruta;
     bool es_la_pagina(void* arg)
     {
         t_pagina* pagina = (t_pagina*)arg;
@@ -203,31 +214,36 @@ void conexion_kernel(void* arg)
             recv(arg_h->socket_kernel, &pid, sizeof(uint32_t), MSG_WAITALL);
             t_proceso* proceso = crear_proceso(pid);
             //log_info(logger_hilo,"pid: %i", pid);
-            char* ruta = recibir_mensaje(arg_h->socket_kernel);
+            ruta = recibir_mensaje(arg_h->socket_kernel);
             recv(arg_h->socket_kernel, &size, sizeof(uint32_t), MSG_WAITALL);
             //log_info(logger_hilo, "%s", ruta);
             parsear_instrucciones(logger_hilo, proceso, leer_pseudocodigo(logger_hilo, ruta));
+            
             sem_wait(&mutex_lista_procesos);
             list_add(procesos_en_memoria, proceso);
             sem_post(&mutex_lista_procesos);
             sem_post(&cantidad_de_procesos);
             //log_info(logger_hilo, "SIGNAL cantidad_de_procesos");
 
-            log_info(logger, "PID: %i - Tamaño: %i", pid, size);;
+            log_info(logger, "PID: %i - Tamaño: %i", pid, size);
 
             enviar_operacion(arg_h->socket_swap, RESERVAR_BLOQUES_SWAP);
             cant_bloques_swap = size / tam_pagina;
             send(arg_h->socket_swap, &cant_bloques_swap, sizeof(uint32_t), NULL);
+            uint32_t* elemento;
             for(int i = 0; i < size / tam_pagina; i++)
             {
-                uint32_t* elemento = malloc(sizeof(uint32_t));
+                elemento = malloc(sizeof(uint32_t));
                 recv(arg_h->socket_swap, elemento, sizeof(uint32_t), MSG_WAITALL);
                 printf("Recibo: %i\n", *elemento);
                 list_add(bloques_swap, *elemento);
+                //free(elemento);
             }
 
             asignar_memoria(pid, size, bloques_swap);
-
+            list_destroy(bloques_swap);
+            //free(cant_bloques_swap);
+            //free(ruta);
             break;
         
         case FINALIZAR_PROCESO:
@@ -281,15 +297,20 @@ void conexion_kernel(void* arg)
                     pagina_a_agregar->presencia = 1;
                     pagina_a_agregar->frame = pagina_a_sacar->pagina->frame; 
                 }
+                free(pagina_a_sacar);
             }
 
             
             enviar_respuesta(arg_h->socket_kernel, OK);
             printf("Envié\n");
+            //free(pagina_a_agregar);
+            
             break;
 
         default:
             liberar_conexion(arg_h->socket_kernel);
+            log_destroy(logger_hilo);
+            
             return;
         }
 
@@ -325,7 +346,8 @@ void finalizar_proceso(uint32_t pid, int socket_swap)
     enviar_operacion(socket_swap, LIBERAR_BLOQUES_SWAP);
     send(socket_swap, &(proceso->tabla_de_paginas->elements_count), sizeof(proceso->tabla_de_paginas->elements_count), NULL);
     list_iterate(proceso->tabla_de_paginas, desasignar_paginas);
-
+    //list_destroy_and_destroy_elements(proceso->instrucciones, free);
+    list_destroy(proceso->instrucciones);
     //list_iterate(bloques_en_swap, enviar_bloques);
-    //list_destroy_and_destroy_elements(bloques_en_swap, free);
+    
 }

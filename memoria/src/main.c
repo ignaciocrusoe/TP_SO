@@ -40,6 +40,7 @@ int main(int argc, char* argv[]){
     memoria_de_usuario = malloc(tam_memoria);
     char* c_bitarray = malloc(tam_memoria / 8);
     frame_bitarray = bitarray_create_with_mode(c_bitarray, sizeof(c_bitarray), LSB_FIRST);
+    
     for(int i = 0; i < tam_memoria; i++)
     {
         bitarray_clean_bit(frame_bitarray, i);
@@ -93,6 +94,9 @@ int main(int argc, char* argv[]){
     //pthread_join(&hilo_conexion_cpu, NULL);
 
     conexion_cpu((void*)&args_conexion_cpu);
-
+    config_destroy(config);
+    log_destroy(logger);
+    bitarray_destroy(frame_bitarray);
     free(memoria_de_usuario);
+    free(c_bitarray);
 }

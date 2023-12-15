@@ -33,8 +33,12 @@ t_algoritmo_response* buscar_victima_fifo(void)
     {
         t_pagina* p1;
         t_pagina* p2;
+        t_list* list_p1 = list_filter(((t_proceso*)e1)->tabla_de_paginas, esta_presente);
+        t_list* list_p2 = list_filter(((t_proceso*)e2)->tabla_de_paginas, esta_presente);
         p1 = list_get_minimum(list_filter(((t_proceso*)e1)->tabla_de_paginas, esta_presente), pagina_con_el_menor_el_timestamp);
         p2 = list_get_minimum(list_filter(((t_proceso*)e2)->tabla_de_paginas, esta_presente), pagina_con_el_menor_el_timestamp);
+        list_destroy(list_p1);
+        list_destroy(list_p2);
         if(p1->timestamp_carga > p2->timestamp_carga)
         {
             return e2;
@@ -46,7 +50,10 @@ t_algoritmo_response* buscar_victima_fifo(void)
     }
     respuesta->proceso = list_get_minimum(procesos_en_memoria, proceso_con_el_menor_el_timestamp);
     printf("Proceso víctima = %i\n", respuesta->proceso->pid);
-    respuesta->pagina = list_get_minimum(list_filter(respuesta->proceso->tabla_de_paginas, esta_presente), pagina_con_el_menor_el_timestamp);
+    t_list* lista = list_filter(respuesta->proceso->tabla_de_paginas, esta_presente);
+    respuesta->pagina = list_get_minimum(lista, pagina_con_el_menor_el_timestamp);
+    
+    list_destroy(lista);
     return respuesta;
 }
 
@@ -72,8 +79,12 @@ t_algoritmo_response* buscar_victima_lru(void)
     {
         t_pagina* p1;
         t_pagina* p2;
-        p1 = list_get_minimum(list_filter(((t_proceso*)e1)->tabla_de_paginas, esta_presente), pagina_con_el_menor_el_timestamp);
-        p2 = list_get_minimum(list_filter(((t_proceso*)e2)->tabla_de_paginas, esta_presente), pagina_con_el_menor_el_timestamp);
+        t_list* list_p1 = list_filter(((t_proceso*)e1)->tabla_de_paginas, esta_presente);
+        t_list* list_p2 = list_filter(((t_proceso*)e2)->tabla_de_paginas, esta_presente);
+        p1 = list_get_minimum(list_p1, pagina_con_el_menor_el_timestamp);
+        p2 = list_get_minimum(list_p2, pagina_con_el_menor_el_timestamp);
+        list_destroy_and_destroy_elements(list_p1, free);
+        list_destroy_and_destroy_elements(list_p2, free);
         if(p1->timestamp_uso > p2->timestamp_uso)
         {
             return e2;
@@ -82,6 +93,7 @@ t_algoritmo_response* buscar_victima_lru(void)
         {
             return e1;
         }
+        
     }
     respuesta->proceso = list_get_minimum(procesos_en_memoria, proceso_con_el_menor_el_timestamp);
     printf("Proceso víctima = %i\n", respuesta->proceso->pid);
@@ -169,5 +181,6 @@ void swap_out(int socket_swap, t_pagina* pagina, uint32_t frame,t_proceso* proce
     printf("Mandé la página (ptr = %i)\n", a_escribir);
     send(socket_swap, a_escribir, tam_pagina, NULL);
     respuesta = recibir_respuesta(socket_swap);
+    free(a_escribir);
     log_info(logger, "SWAP OUT -  PID: %i - Marco: %i - Page Out: %i-%i", proceso->pid, frame, proceso->pid, pagina->pagina);
 }

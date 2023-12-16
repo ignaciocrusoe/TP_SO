@@ -71,11 +71,11 @@ void conexion_kernel(void* arg)
 				sleep(retardo_acceso_fat / 1000);
 			}
 			printf("3\n");
-			uint32_t a_enviar = leer_dato(nro_bloque, puntero - ceil(puntero / tam_bloque) * tam_bloque);
-			printf("operacion: PEDIDO_ESCRITURA - direccion: %i:%i - datos: %i\n", direccion->frame, direccion->offset, a_enviar);
+			void* a_enviar = leer_bloque(nro_bloque);
+			printf("operacion: PEDIDO_ESCRITURA - direccion: %i:%i - datos: %s\n", direccion->frame, direccion->offset, (char*)a_enviar);
 			enviar_operacion(arg_h->socket_memoria, PEDIDO_ESCRITURA);
 			enviar_direccion(arg_h->socket_memoria, direccion);
-			send(arg_h->socket_memoria, &a_enviar, sizeof(uint32_t), NULL);
+			send(arg_h->socket_memoria, a_enviar, tam_bloque, NULL);
 			enviar_respuesta(arg_h->socket_kernel, OK);
 		}
 		break;
@@ -88,7 +88,7 @@ void conexion_kernel(void* arg)
 			t_fcb* fcb = buscar_archivo(nombre_archivo, archivos_abiertos);
 			printf("dir: %i\n", direccion->frame);
 			uint32_t bloque = fcb->bloque_inicial;
-			uint32_t a_escribir;
+			void* a_escribir = malloc(tam_pagina);;
 			for(uint32_t i = 0; i < ceil(puntero / tam_bloque); i++)
 			{
 				log_info(logger, "Acceso FAT - Entrada: %i - Valor: %i", bloque, fat->memory_map[bloque]);
@@ -99,10 +99,10 @@ void conexion_kernel(void* arg)
 			enviar_operacion(arg_h->socket_memoria, PEDIDO_LECTURA);
 			enviar_direccion(arg_h->socket_memoria, direccion);
 			//printf("Pedí el dato a memoria, ahora lo recibo\n");
-			recv(arg_h->socket_memoria, &a_escribir, sizeof(uint32_t), MSG_WAITALL);
+			recv(arg_h->socket_memoria, a_escribir, tam_pagina, MSG_WAITALL);
 			//Escribir en el archivo
-			printf("El dato que recibí es %i\n", a_escribir);
-			escribir_dato(bloque, puntero - ceil(puntero / tam_bloque) * tam_bloque, a_escribir);
+			//printf("El dato que recibí es %i\n", *a_escribir);
+			escribir_bloque(bloque, a_escribir);
 			enviar_respuesta(arg_h->socket_kernel, OK);
 		}
 		break;

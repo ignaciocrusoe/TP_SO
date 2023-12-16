@@ -16,6 +16,18 @@ uint32_t leer_de_memoria(t_direccion_fisica* direccion)
     return leido;
 }
 
+void* leer_de_memoria_pagina(t_direccion_fisica* direccion)
+{
+    void* leido = malloc(tam_pagina);
+    memcpy(leido, memoria_de_usuario + (direccion->frame * tam_pagina) + direccion->offset, tam_pagina);
+    return leido;
+}
+
+void escribir_en_memoria_pagina(t_direccion_fisica* direccion, void* a_escribir)
+{
+    memcpy(memoria_de_usuario + (direccion->frame * tam_pagina) + direccion->offset, a_escribir, tam_pagina);
+}
+
 void escribir_en_memoria(t_direccion_fisica* direccion, uint32_t a_escribir)
 {
     memcpy(memoria_de_usuario + (direccion->frame * tam_pagina) + direccion->offset, &a_escribir, sizeof(uint32_t));
@@ -130,6 +142,8 @@ void conexion_filesystem(void* arg)
     log_info(logger_hilo,"Socket: %i", arg_h->socket_filesystem);
     t_direccion_fisica* direccion;
     t_pagina* pagina;
+    void* a_escribir = malloc(tam_pagina);
+    void* lectura;
     //enviar_mensaje("LISTO_PARA_RECIBIR_PEDIDOS",arg_h->socket_cpu);
     while(1)
     {
@@ -140,21 +154,22 @@ void conexion_filesystem(void* arg)
         {
         case PEDIDO_LECTURA:
             direccion = recibir_direccion(arg_h->socket_filesystem);
-            uint32_t lectura = leer_de_memoria(direccion);
+            lectura = leer_de_memoria_pagina(direccion);
             pagina = buscar_pagina_segun_frame(direccion->frame);
             pagina->timestamp_uso = time(NULL);
-            send(arg_h->socket_filesystem, &lectura, sizeof(uint32_t), NULL);
+            send(arg_h->socket_filesystem, lectura, tam_pagina, NULL);
+            free(lectura);
             break;
 
         case PEDIDO_ESCRITURA:
-            uint32_t a_escribir;
+            
             direccion = recibir_direccion(arg_h->socket_filesystem);
-            recv(arg_h->socket_filesystem, &a_escribir, sizeof(uint32_t), MSG_WAITALL);
+            recv(arg_h->socket_filesystem, a_escribir, tam_pagina, MSG_WAITALL);
             pagina = buscar_pagina_segun_frame(direccion->frame);
             pagina->timestamp_uso = time(NULL);
             pagina->modificado = 1;
             //printf("Voy a escribir en memoria\n");
-            escribir_en_memoria(direccion, a_escribir);
+            escribir_en_memoria_pagina(direccion, a_escribir);
             break;
 
         default:

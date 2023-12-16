@@ -77,8 +77,10 @@ void finalizar_procesos_en_exit(void* arg)
         log_info(logger,"Hice wait de la cola de exit: %i", cola_exit);
         printf("cola_exit->elements->elements_count = %i\n", cola_exit->elements->elements_count);
         t_pcb* pcb = queue_pop(cola_exit);
+        printf("Paso el queue pop;\n");
         sem_post(&mutex_cola_exit);
         finalizar_proceso_en_exit(pcb->pid, arg_h->socket_dispatch, arg_h->socket_memoria, pcb, arg);
+        printf("Paso el finalizar_proceso\n");
         sem_post(&grado_de_multiprogramacion);
 
     }
@@ -99,19 +101,37 @@ void finalizar_proceso_en_exit(uint32_t pid, int socket_cpu_dispatch, int socket
     }
     void hacer_signal(void* arg)
     {
+        printf("Hago signal de los recursos asignados.\n");
         t_recurso* recurso_local = (t_recurso*)arg;
         t_recurso* recurso = buscar_recurso(((t_recurso*)arg)->nombre);
-        for(uint32_t i = recurso_local->instancias; i > 0; i--)
-        {
-            recurso->instancias++;
-            desbloquear_procesos(recurso->nombre);
-        }
+        printf("Busqué el recurso en los recursos disponibles.\n");
+        //printf("Nombre recurso = %s - Instancias = %i\n", recurso->nombre, recurso->instancias);
+
+            for(uint32_t i = 0; i < recurso_local->instancias; i++)
+            {
+                printf("libero una instancia de %s\n", recurso->nombre);
+                recurso->instancias++;
+                desbloquear_procesos(recurso->nombre);
+            }
+    
         printf("Libero %i instancias del recurso %s\n", recurso_local->instancias, recurso_local->nombre);
         recurso_local->instancias = 0;
         //signal_recurso(logger, ((t_recurso*)arg)->nombre, socket_cpu_dispatch, pcb);
     }
 
-    list_iterate(pcb->recursos_asignados, hacer_signal);
+    //list_iterate(pcb->recursos_asignados, hacer_signal);
+    //for(int j = 0; j < list_size(pcb->recursos_asignados); j++)
+    //{
+    //    t_recurso* recurso_prueba = list_get(pcb->recursos_asignados, j);
+    //    if(recurso_prueba->instancias <= 0)
+    //    {
+//
+    //    }
+    //    else
+    //    {
+    //        hacer_signal(recurso_prueba);
+    //    }
+    //}
     printf("Hice signal\n");
     printf("pcb->tabla_de_archivos_abierto->elements_count = %i\n", pcb->tabla_de_archivos_abiertos->elements_count);
     //list_iterate(pcb->tabla_de_archivos_abiertos, hacer_f_close);

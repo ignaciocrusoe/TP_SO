@@ -93,6 +93,8 @@ int main(int argc, char* argv[]){
     //pthread_join(&hilo_conexion_cpu, NULL);
 
     conexion_cpu((void*)&args_conexion_cpu);
-
+    bitarray_destroy(frame_bitarray);
+    free(c_bitarray);
+    log_destroy(logger);
     free(memoria_de_usuario);
 }

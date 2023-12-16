@@ -23,6 +23,7 @@ extern t_log *logger;
 
 extern char* ip_filesystem;
 extern char* puerto_filesystem;
+char* algoritmo_planificacion;
 
 t_archivo *crear_archivo(char *nombre_archivo, uint32_t tam_archivo, t_lock lock)
 {
@@ -199,6 +200,12 @@ void file_open(void *arg)
             }
         }
     }
+
+    if(!strcmp(algoritmo_planificacion, "PRIORIDADES"))
+    {
+        enviar_operacion(arg_h->socket_interrupt, INTERRUPT);
+    }
+
     liberar_conexion(arg_h->socket_filesystem);
     //sem_post(&mutex_file_management);
     //printf("TERMINA EL HILO\n");
@@ -245,6 +252,11 @@ void file_read(void *arg)
         break;
     }
 
+    if(!strcmp(algoritmo_planificacion, "PRIORIDADES"))
+    {
+        enviar_operacion(arg_h->socket_interrupt, INTERRUPT);
+    }
+
     liberar_conexion(arg_h->socket_filesystem);
     //sem_post(&mutex_file_management);
     liberar_parametros(arg_h);
@@ -271,6 +283,12 @@ void file_write(void *arg)
         log_info(logger, "Fin de proceso %i motivo INVALID WRITE", arg_h->execute->pid);
         sem_post(&mutex_cola_exit);
         sem_post(&procesos_en_exit);
+
+        if(!strcmp(algoritmo_planificacion, "PRIORIDADES"))
+        {
+        enviar_operacion(arg_h->socket_interrupt, INTERRUPT);
+        }
+
         liberar_conexion(arg_h->socket_filesystem);
         liberar_parametros(arg_h);
         return;
@@ -295,7 +313,10 @@ void file_write(void *arg)
     default:
         break;
     }
-
+    if(!strcmp(algoritmo_planificacion, "PRIORIDADES"))
+    {
+        enviar_operacion(arg_h->socket_interrupt, INTERRUPT);
+    }
     liberar_conexion(arg_h->socket_filesystem);
     //sem_post(&mutex_file_management);
     liberar_parametros(arg_h);
@@ -329,6 +350,10 @@ void file_truncate(void *arg)
         break;
     default:
         break;
+    }
+    if(!strcmp(algoritmo_planificacion, "PRIORIDADES"))
+    {
+        enviar_operacion(arg_h->socket_interrupt, INTERRUPT);
     }
     liberar_conexion(arg_h->socket_filesystem);
     //sem_post(&mutex_file_management);
@@ -430,6 +455,12 @@ void file_close(void *arg)
                         sem_post(&procesos_en_ready);
                         archivo->contador_aperturas++;
                     }
+
+                    if(!strcmp(algoritmo_planificacion, "PRIORIDADES"))
+                    {
+                        enviar_operacion(arg_h->socket_interrupt, INTERRUPT);
+                    }
+
                     //printf("TERMINA EL HILO PORQUE TODOS LOS BLOQUEADOS SON DE ESCRITURA\n");
                     liberar_parametros(arg_h);
                     //sem_post(&mutex_file_management);
@@ -439,6 +470,12 @@ void file_close(void *arg)
                 {
                     log_warning(logger, "Se elimina el archivo");
                     list_remove_by_condition(tabla_global_de_archivos, es_el_archivo);
+
+
+                    if(!strcmp(algoritmo_planificacion, "PRIORIDADES"))
+                    {
+                        enviar_operacion(arg_h->socket_interrupt, INTERRUPT);
+                    }
 
                     liberar_conexion(arg_h->socket_filesystem);
                     //printf("TERMINA EL HILO PORQUE NO HAY NADA\n");
@@ -489,6 +526,10 @@ void file_close(void *arg)
                             element = list_remove_by_condition(archivo->cola_blocked->elements, tiene_lock_lectura);
                         } while (element != NULL);
                         //printf("TERMINA EL HILO PORQUE NO HAY NADA\n");
+                        if(!strcmp(algoritmo_planificacion, "PRIORIDADES"))
+                        {
+                            enviar_operacion(arg_h->socket_interrupt, INTERRUPT);
+                        }
                         liberar_parametros(arg_h);
                         liberar_conexion(arg_h->socket_filesystem);
                         //sem_post(&mutex_file_management);
@@ -507,6 +548,10 @@ void file_close(void *arg)
                         sem_post(&mutex_cola_ready);
                         list_add(proceso_bloqueado->pcb->tabla_de_archivos_abiertos, archivo_local);
                         //printf("TERMINA EL HILO PORQUE NO HAY NADA\n");
+                        if(!strcmp(algoritmo_planificacion, "PRIORIDADES"))
+                        {
+                            enviar_operacion(arg_h->socket_interrupt, INTERRUPT);
+                        }
                         liberar_parametros(arg_h);
                         liberar_conexion(arg_h->socket_filesystem);
                         //sem_post(&mutex_file_management);
@@ -520,6 +565,10 @@ void file_close(void *arg)
                 list_remove_element(tabla_global_de_archivos, archivo);
                 log_warning(logger, "Se elimina el archivo");
             }
+        }
+        if(!strcmp(algoritmo_planificacion, "PRIORIDADES"))
+        {
+            enviar_operacion(arg_h->socket_interrupt, INTERRUPT);
         }
         liberar_parametros(arg_h);
         liberar_conexion(arg_h->socket_filesystem);
@@ -563,6 +612,10 @@ void file_seek(void *arg)
     else
     {
         log_error(logger, "El archivo no existe");
+    }
+    if(!strcmp(algoritmo_planificacion, "PRIORIDADES"))
+    {
+        enviar_operacion(arg_h->socket_interrupt, INTERRUPT);
     }
     liberar_conexion(arg_h->socket_filesystem);
     //sem_post(&mutex_file_management);
@@ -661,6 +714,10 @@ void cerrar_archivo(void* arg)
                         archivo->contador_aperturas++;
                     }
                     //printf("TERMINA EL HILO PORQUE TODOS LOS BLOQUEADOS SON DE ESCRITURA\n");
+                    if(!strcmp(algoritmo_planificacion, "PRIORIDADES"))
+                    {
+                        enviar_operacion(arg_h->socket_interrupt, INTERRUPT);
+                    }
                     liberar_parametros(arg_h);
                     //sem_post(&mutex_file_management);
                     return;
@@ -671,6 +728,10 @@ void cerrar_archivo(void* arg)
                     list_remove_by_condition(tabla_global_de_archivos, es_el_archivo);
 
                     liberar_conexion(arg_h->socket_filesystem);
+                    if(!strcmp(algoritmo_planificacion, "PRIORIDADES"))
+                    {
+                        enviar_operacion(arg_h->socket_interrupt, INTERRUPT);
+                    }
                     //printf("TERMINA EL HILO PORQUE NO HAY NADA\n");
                     liberar_parametros(arg_h);
                     //sem_post(&mutex_file_management);
@@ -719,6 +780,10 @@ void cerrar_archivo(void* arg)
                             element = list_remove_by_condition(archivo->cola_blocked->elements, tiene_lock_lectura);
                         } while (element != NULL);
                         //printf("TERMINA EL HILO PORQUE NO HAY NADA\n");
+                        if(!strcmp(algoritmo_planificacion, "PRIORIDADES"))
+                        {
+                            enviar_operacion(arg_h->socket_interrupt, INTERRUPT);
+                        }
                         liberar_parametros(arg_h);
                         liberar_conexion(arg_h->socket_filesystem);
                         //sem_post(&mutex_file_management);
@@ -737,6 +802,10 @@ void cerrar_archivo(void* arg)
                         sem_post(&mutex_cola_ready);
                         list_add(proceso_bloqueado->pcb->tabla_de_archivos_abiertos, archivo_local);
                         //printf("TERMINA EL HILO PORQUE NO HAY NADA\n");
+                        if(!strcmp(algoritmo_planificacion, "PRIORIDADES"))
+                        {
+                            enviar_operacion(arg_h->socket_interrupt, INTERRUPT);
+                        }
                         liberar_parametros(arg_h);
                         liberar_conexion(arg_h->socket_filesystem);
                         //sem_post(&mutex_file_management);
@@ -755,6 +824,10 @@ void cerrar_archivo(void* arg)
         liberar_conexion(arg_h->socket_filesystem);
         //sem_post(&mutex_file_management);
         return;
+    }
+    if(!strcmp(algoritmo_planificacion, "PRIORIDADES"))
+    {
+        enviar_operacion(arg_h->socket_interrupt, INTERRUPT);
     }
     liberar_parametros(arg_h);
     liberar_conexion(arg_h->socket_filesystem);

@@ -24,6 +24,7 @@ void asignar_memoria(uint32_t pid, uint32_t size, t_list* bloques_swap);
 t_proceso* buscar_proceso(uint32_t pid);
 void conexion_filesystem(void* arg);
 t_pagina* buscar_pagina_segun_frame(uint32_t frame);
+uint32_t buscar_pid_segun_frame(uint32_t frame);
 
 //uint32_t ultima_pagina_accedida();
 

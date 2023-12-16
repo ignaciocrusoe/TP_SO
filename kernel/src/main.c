@@ -26,6 +26,7 @@ uint8_t planificacion_iniciada;
 
 char* ip_filesystem;
 char* puerto_filesystem;
+char* algoritmo_planificacion;
 
 uint32_t* instancias_recursos(char** instancias)
 {
@@ -133,7 +134,7 @@ int main(int argc, char* argv[])
     ip_filesystem = config_get_string_value(config, "IP_FILESYSTEM");
     puerto_filesystem = config_get_string_value(config, "PUERTO_FILESYSTEM");
     char* grado_max_de_multiprogramacion = config_get_string_value(config, "GRADO_MULTIPROGRAMACION_INI");
-    char* algoritmo_planificacion = config_get_string_value(config, "ALGORITMO_PLANIFICACION");
+    algoritmo_planificacion = config_get_string_value(config, "ALGORITMO_PLANIFICACION");
     char** recursos = config_get_array_value(config, "RECURSOS");
     char** instancias_recursos = config_get_array_value(config, "INSTANCIAS_RECURSOS");
     int quantum = config_get_int_value(config, "QUANTUM");

@@ -21,6 +21,7 @@ extern t_pcb* execute;
 extern t_list* recursos_disponibles;
 extern t_list* tabla_global_de_archivos;
 extern t_log* logger;
+extern char* algoritmo_planificacion;
 
 void planificador_largo_plazo(void* arg)
 {
@@ -50,6 +51,12 @@ void planificador_largo_plazo(void* arg)
         sem_post(&mutex_cola_new);
         sem_wait(&mutex_cola_ready);
         queue_push(cola_ready, pcb);
+
+        if(!strcmp(algoritmo_planificacion, "PRIORIDADES"))
+        {
+            enviar_operacion(arg_h->socket_interrupt, INTERRUPT);
+        }
+
         sem_post(&mutex_cola_ready);
         log_info(logger, "PID:%i - Estado:%i", pcb->pid, pcb->estado);
         log_info(logger, "PID: %i - Estado Anterior: NEW - Estado Actual: READY", pcb->pid);
@@ -109,8 +116,8 @@ void finalizar_proceso_en_exit(uint32_t pid, int socket_cpu_dispatch, int socket
     printf("Hice signal\n");
     printf("pcb->tabla_de_archivos_abierto->elements_count = %i\n", pcb->tabla_de_archivos_abiertos->elements_count);
     //list_iterate(pcb->tabla_de_archivos_abiertos, hacer_f_close);
-    printf("Hice f_close\n");
-    enviar_operacion(socket_memoria, FINALIZAR_PROCESO);
+    //printf("Hice f_close\n");
+    //enviar_operacion(socket_memoria, FINALIZAR_PROCESO);
     send(socket_memoria, &(pcb->pid), sizeof(uint32_t), NULL);
     printf("Finalizar proceso %i en memoria\n", pcb->pid);
 }

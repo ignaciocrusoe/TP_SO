@@ -48,6 +48,7 @@ void conexion_kernel(void* arg)
 		if(crear_archivo(path_fcb, nombre_archivo))
 		{
 			enviar_respuesta(arg_h->socket_kernel, OK);
+			//log_info(logger_hilo, “Crear Archivo: %i, arg_h->socket_kernel”);
 		}
 		else
 		{
@@ -58,14 +59,15 @@ void conexion_kernel(void* arg)
 		nombre_archivo = recibir_mensaje(arg_h->socket_kernel);
 		{
 			recv(arg_h->socket_kernel, &puntero, sizeof(uint32_t), MSG_WAITALL);
-			printf("1A\n");
+			printf("puntero = %i\n", puntero);
 			t_direccion_fisica* direccion = recibir_direccion(arg_h->socket_kernel);
-			printf("1B\n");
+			printf("direccion = %i - %i\n", direccion->frame, direccion->offset);
 			t_fcb* fcb = buscar_archivo(nombre_archivo, archivos_abiertos);
 			uint32_t nro_bloque = fcb->bloque_inicial;
 			printf("2\n");
 			for(uint32_t i; i < ceil(puntero / tam_bloque); i++)
 			{
+				log_info(logger, "Acceso FAT - Entrada: %i - Valor: %i", nro_bloque, fat->memory_map[nro_bloque]);
 				nro_bloque = fat->memory_map[nro_bloque]; //No validemos que se pida un dato mayor al mapeado;
 			}
 			printf("3\n");

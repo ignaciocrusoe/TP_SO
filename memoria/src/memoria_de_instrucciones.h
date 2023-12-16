@@ -24,5 +24,6 @@ void parsear_instrucciones(t_log* logger,t_proceso* proceso, char* str);
 char* leer_pseudocodigo(t_log* logger, char* nombre_archivo);
 t_proceso* crear_proceso(uint32_t pid);
 void conexion_kernel(void* arg);
+void finalizar_proceso(uint32_t pid, int socket_swap);
 
 #endif

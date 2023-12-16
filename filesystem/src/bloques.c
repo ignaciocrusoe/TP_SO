@@ -50,7 +50,7 @@ void escribir_dato(uint32_t bloque, uint32_t offset, uint32_t dato)
 
 void escribir_bloque(uint32_t bloque, void* dato)
 {
-    log_info(logger,"Escribe datos en el archivo: bloues.dat");
+    log_info(logger,"Escribe datos en el BLOQUE %i\n", bloque);
     fseek(bloques, (cant_bloques_swap + bloque) * tam_bloque, SEEK_SET);
     fwrite(dato, tam_bloque, 1, bloques);
     sleep(retardo_acceso_bloque / 1000);

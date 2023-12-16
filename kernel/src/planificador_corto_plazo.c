@@ -256,7 +256,7 @@ void evaluar_motivo_desalojo(t_log* logger, t_motivo_desalojo motivo, void* arg)
             break;
 
         case F_WRITE:
-            printf("F_READ\n");
+            printf("---F_WRITE---\n");
             nombre_archivo = recibir_mensaje(arg_h->socket_dispatch);
             direccion = recibir_direccion(arg_h->socket_dispatch);
             log_info(logger, "PID: %i - Estado Anterior: EXEC - Estado Actual: BLOCKED", execute->pid);

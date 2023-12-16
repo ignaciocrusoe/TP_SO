@@ -409,7 +409,7 @@ void file_close(void *arg)
     //sem_wait(&mutex_file_management);
     //printf("ejecuta file_close()\n");
     t_response respuesta;
-    arg_h->socket_filesystem = crear_conexion(logger, ip_filesystem, puerto_filesystem);
+    //arg_h->socket_filesystem = crear_conexion(logger, ip_filesystem, puerto_filesystem);
 
     archivo = buscar_archivo(tabla_global_de_archivos, arg_h->nombre_archivo);
     if (archivo != NULL)
@@ -477,7 +477,7 @@ void file_close(void *arg)
                         enviar_operacion(arg_h->socket_interrupt, INTERRUPT);
                     }
 
-                    liberar_conexion(arg_h->socket_filesystem);
+                    //liberar_conexion(arg_h->socket_filesystem);
                     //printf("TERMINA EL HILO PORQUE NO HAY NADA\n");
                     liberar_parametros(arg_h);
                     //sem_post(&mutex_file_management);
@@ -486,7 +486,7 @@ void file_close(void *arg)
             }
             else
             {
-                liberar_conexion(arg_h->socket_filesystem);
+                //liberar_conexion(arg_h->socket_filesystem);
                 liberar_parametros(arg_h);
                 //sem_post(&mutex_file_management);
                 return;
@@ -531,7 +531,7 @@ void file_close(void *arg)
                             enviar_operacion(arg_h->socket_interrupt, INTERRUPT);
                         }
                         liberar_parametros(arg_h);
-                        liberar_conexion(arg_h->socket_filesystem);
+                        //liberar_conexion(arg_h->socket_filesystem);
                         //sem_post(&mutex_file_management);
                         //printf("Después del fclose, hay %i archivos con lock de lectura, y %i bloqueados\n", archivo->locks_lectura->elements_count, archivo->cola_blocked->elements->elements_count);
                         return;
@@ -553,7 +553,7 @@ void file_close(void *arg)
                             enviar_operacion(arg_h->socket_interrupt, INTERRUPT);
                         }
                         liberar_parametros(arg_h);
-                        liberar_conexion(arg_h->socket_filesystem);
+                        //liberar_conexion(arg_h->socket_filesystem);
                         //sem_post(&mutex_file_management);
                         return;
                     }
@@ -571,7 +571,7 @@ void file_close(void *arg)
             enviar_operacion(arg_h->socket_interrupt, INTERRUPT);
         }
         liberar_parametros(arg_h);
-        liberar_conexion(arg_h->socket_filesystem);
+        //liberar_conexion(arg_h->socket_filesystem);
         //sem_post(&mutex_file_management);
         return;
     }

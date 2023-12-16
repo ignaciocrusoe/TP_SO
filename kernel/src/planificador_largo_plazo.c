@@ -75,6 +75,7 @@ void finalizar_procesos_en_exit(void* arg)
         log_info(logger,"Hice wait del gdmp");
         sem_wait(&mutex_cola_exit);
         log_info(logger,"Hice wait de la cola de exit: %i", cola_exit);
+        printf("cola_exit->elements->elements_count = %i\n", cola_exit->elements->elements_count);
         t_pcb* pcb = queue_pop(cola_exit);
         sem_post(&mutex_cola_exit);
         finalizar_proceso_en_exit(pcb->pid, arg_h->socket_dispatch, arg_h->socket_memoria, pcb, arg);
